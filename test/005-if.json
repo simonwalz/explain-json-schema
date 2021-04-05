@@ -1,0 +1,55 @@
+{
+	"type": "object",
+	"properties": {
+		"choose": {
+			"type": "string",
+			"enum": ["A", "B", "C"]
+		}
+	},
+	"allOf": [{
+		"if": {
+			"properties": {
+				"choose": {
+					"const": "A"
+				}
+			}
+		},
+		"then": {
+			"properties": {
+				"extra-A": {
+					"type": "number"
+				}
+			}
+		}
+	},{
+		"if": {
+			"properties": {
+				"choose": {
+					"const": "B"
+				}
+			}
+		},
+		"then": {
+			"properties": {
+				"extra-B": {
+					"type": "string"
+				}
+			}
+		}
+	},{
+		"if": {
+			"properties": {
+				"choose": {
+					"const": "B"
+				}
+			}
+		},
+		"else": {
+			"properties": {
+				"extra-C": {
+					"type": "string"
+				}
+			}
+		}
+	}]
+}

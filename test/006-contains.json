@@ -1,0 +1,13 @@
+{
+	"type": "array",
+	"contains": {
+		"type": "object",
+		"properties": {
+			"prop": {
+				"enum": [ "B" ]
+			}
+		}
+	},
+	"minContains": 2,
+	"maxContains": 4
+}

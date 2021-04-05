@@ -23,6 +23,7 @@
 		"universe": {
 			"type": "number",
 			"title": "ArtNet universe",
+			"default": 0,
 			"examples": [ 0 ]
 		},
 		"iface": {
@@ -58,9 +59,11 @@
 						"examples": [ 63 ]
 					}
 				},
+				"required": [ "channel" ],
 				"additionalProperties": false
 			}
 		}
 	},
+	"required": [ ],
 	"additionalProperties": false
 }

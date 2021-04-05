@@ -2,18 +2,18 @@ The schema is valid, if it
 
   * is of type `object` and 
   * either 
-    * has properties, where<br/>property **connect_type** 
+    * has properties, where<br/>required property **connect_type** 
       * is `RTU` or 
       * is `C701` or 
       * is `RTUBuffered` or 
       * is `AsciiSerial` , and 
-    * property **connect_path** 
+    * required property **connect_path** 
       * is of type `string` , and 
-    * property **connect_options** 
+    * optional property **connect_options** 
       * is of type `object` and 
-      * has properties, where<br/>property **baudRate** 
+      * has properties, where<br/>optional property **baudRate** 
         * is of type `number` , and 
-    * property **map** 
+    * optional property **map** 
       * is of type `array` and 
       * has *tabs* format and 
       * has items, where every item 
@@ -39,16 +39,16 @@ The schema is valid, if it
         * optional property **metadata** 
           * is of type `object` 
   * or 
-    * has properties, where<br/>property **connect_type** 
+    * has properties, where<br/>required property **connect_type** 
       * is `TCP` or 
       * is `Telnet` , and 
-    * property **connect_path** 
+    * required property **connect_path** 
       * is of type `string` , and 
-    * property **connect_options** 
+    * optional property **connect_options** 
       * is of type `object` and 
-      * has properties, where<br/>property **port** 
+      * has properties, where<br/>optional property **port** 
         * is of type `number` , and 
-    * property **map** 
+    * optional property **map** 
       * is of type `array` and 
       * has *tabs* format and 
       * has items, where every item 
