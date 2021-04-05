@@ -2,11 +2,17 @@
 
 This project allows to convert a [JSON schema](https://json-schema.org) to native english text.
 
+Examples:
+
+  * [Configuration osiota ArtNet app](test/010-example-artnet.md)
+  * [Configuration osiota Modbus app](test/011-example-modbus.md)
+
 ### Supported JSON schema features
 
   * Basic attributes:
     * enum, const
     * deprecated
+    * $ref locally
   * number, integer
     * minimum, maximum, exclusiveMinimum, exclusiveMaximum
     * multipleOf
@@ -38,9 +44,6 @@ This project allows to convert a [JSON schema](https://json-schema.org) to nativ
 
 ### Missing JSON schema features
 
-  * object
-    * patternProperties
-    * propertyNames.pattern
   * if, then, else
   * object: dependencies (Properties and Schema)
 
@@ -56,6 +59,12 @@ Run:
 ```sh
 npx explain-json-schema --schema schema.json >TEXT.md
 ```
+
+
+## Use as lib:
+
+See `cli.js`
+
 
 ## License
 

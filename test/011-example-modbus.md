@@ -72,4 +72,5 @@ The schema is valid, if it
           * is `boolean` or 
           * is `uint16` , and 
         * optional property **metadata** 
-          * is of type `object` 
+          * is of type `object` , and 
+  * has no more properties 

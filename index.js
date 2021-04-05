@@ -148,8 +148,9 @@ var explain = function(element, depth) {
 	}
 
 	// object: properties
-	if (isObject(element.properties)) {
-		var prefix = "has ";
+	var prefix = "has ";
+	if (isObject(element.properties) || isObject(element.patternProperties)
+			|| isObject(element.propertyNames)){
 		if (typeof element.minProperties === "number") {
 			prefix += "at least " + element.minProperties + " ";
 			if (typeof element.maxProperties === "number") {
@@ -160,6 +161,15 @@ var explain = function(element, depth) {
 			prefix += "not more than " + element.maxProperties + " ";
 		}
 		prefix += "properties, where<br/>";
+	}
+	if (isObject(element.propertyNames) &&
+			typeof element.propertyNames.pattern === "string") {
+		var rr = prefix + "all property names match `" +
+				element.propertyNames.pattern + "` ";
+		prefix = "";
+		r.push(rr);
+	}
+	if (isObject(element.properties)) {
 		var rr = Object.keys(element.properties).map(function(prop) {
 			var ep = element.properties[prop];
 			var r = prefix;
@@ -177,12 +187,19 @@ var explain = function(element, depth) {
 			return r+rr;
 		}).conjunction("and ", depth);
 		r.push(rr);
-		if (element.additionalProperties === false) {
-			r.push("has no more properties ");
-		} else if (isObject(element.additionalProperties)) {
-			var rr = explain(element.additionalProperties, depth+1);
-			r.push("each additional property" + rr);
-		}
+	}
+	// object: patternProperties
+	if (isObject(element.patternProperties)) {
+		var rr = Object.keys(element.properties).map(function(prop) {
+			var ep = element.properties[prop];
+			var r = prefix;
+			r += "the property key name matches `" + prop + "` and the value ";
+			var rr = explain(ep, depth+1);
+			if (rr === null || rr === "") return null;
+			prefix = "";
+			return r+rr;
+		}).conjunction("and ", depth);
+		r.push(rr);
 	}
 	// array: items
 	if (Array.isArray(element.items)) {
@@ -259,6 +276,15 @@ var explain = function(element, depth) {
 		if (!rr) return "never";
 		else if (rr !== "never") r.push("never " + rr);
 	}
+
+	// object: additionalProperties
+	if (element.additionalProperties === false) {
+		r.push("has no more properties ");
+	} else if (isObject(element.additionalProperties)) {
+		var rr = explain(element.additionalProperties, depth+1);
+		r.push("each additional property" + rr);
+	}
+
 	return r.conjunction("and ", depth);
 }
 
