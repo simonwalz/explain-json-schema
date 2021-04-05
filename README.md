@@ -1,6 +1,6 @@
 # Explain JSON schema
 
-This project allows to convert a [JSON schema](https://json-schema.org) to native english text.
+This project allows to convert a [JSON Schema](https://json-schema.org) to native english text.
 
 Examples:
 
