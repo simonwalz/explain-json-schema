@@ -1,13 +1,7 @@
-#!/usr/bin/env node
-
-const argv = require('minimist')(process.argv.slice(2));
-const fs = require("fs");
 
 var isObject = function(object) {
 	return typeof object === "object" && object !== null;
 }
-
-var schema = JSON.parse(fs.readFileSync(argv.schema));
 
 var count = function(i) {
 	if (i === 1) return "1th";
@@ -29,9 +23,7 @@ Array.prototype.conjunction = function(word, depth, less_lines) {
 			return e;
 		}
 		if (i !== arr.length-1) {
-			//console.error(depth, word, "E", "x\n"+"    "+sep+"x", e,
-			//	e.toString().includes("    "+sep));
-			if (e.toString().includes("    "+sep)) {
+			if (e.toString().includes("    "+sep) && word == "or "){
 				e += "\n"+sep + word;
 			} else if (e.toString().includes("  "+sep)) {
 				e += ", " + word;
@@ -45,21 +37,41 @@ Array.prototype.conjunction = function(word, depth, less_lines) {
 	if (!r.length) return null;
 	return r.join("");
 };
+var global_schema = null;
+var getref = function(object) {
+	if (typeof object['$ref'] === "string") {
+		var o = global_schema;
+		var path = object['$ref'].replace(/^#\//, '');
+		path.split(/\//)
+				.forEach(function(p) {
+			o = o[p];
+		});
+		o.path = path;
+		return o;
+	}
+	return object;
+};
 
-var parse_if = function(element, depth) {
+var explain = function(element, depth) {
+	if (global_schema == null) {
+		global_schema = element;
+		var re = explain(element, depth);
+		global_schema = null;
+		return re;
+	}
+	//element = getref(element);
 	if (typeof depth !== "number") depth = 0;
 	var r = [];
-//verb = "is"
 	if (element.deprecated === true) {
 		var rr = "is deprecated";
 		r.push(rr);
 	}
-	//const
+	// const
 	if (typeof element.const !== "undefined") {
 		r.push("is `" + element.const + "` ");
 		return r.conjunction("and ", depth, true);
 	}
-	//enum
+	// enum
 	else if (Array.isArray(element.enum)) {
 		if (element.enum.length === 0) {
 			return "never";
@@ -71,7 +83,7 @@ var parse_if = function(element, depth) {
 			return r.conjunction("and ", depth);
 		}
 	}
-	//type
+	// type
 	if (typeof element.type == "string") {
 		let rr = "is of type `"+element.type + "` ";
 		r.push(rr);
@@ -81,7 +93,7 @@ var parse_if = function(element, depth) {
 				.conjunction("or ", depth+1) + " ";
 		r.push(rr);
 	}
-	//number
+	// number
 	var rwhere = [];
 	if (typeof element.minimum === "number") {
 		var rr = "is at least " + element.minimum + " ";
@@ -110,33 +122,32 @@ var parse_if = function(element, depth) {
 	// string
 	if (typeof element.format === "string") {
 		var rr = "has *" + element.format + "* format";
-		rwhere.push(rr);
+		r.push(rr);
 	}
 	if (typeof element.pattern === "string") {
 		var rr = "matches pattern `" + element.pattern + "` ";
-		rwhere.push(rr);
+		r.push(rr);
 	}
 	if (typeof element.minLength === "number") {
 		var rr = "is at least " + element.minLength + " characters long ";
-		rwhere.push(rr);
+		r.push(rr);
 	}
 	if (typeof element.maxLength === "number") {
 		var rr = "is not longer than " + element.maxLength + " characters ";
-		rwhere.push(rr);
+		r.push(rr);
 	}
 	if (typeof element.contentMediaType === "string") {
 		var rr = "has a media type of `" + element.contentMediaType +
 				"`";
-		rwhere.push(rr);
+		r.push(rr);
 	}
 	if (typeof element.contentEncoding === "string") {
 		var rr = "has a media type of `" + element.contentEncoding +
 				"`";
-		rwhere.push(rr);
+		r.push(rr);
 	}
 
-// has ... that is | and ... is
-	// properties
+	// object: properties
 	if (isObject(element.properties)) {
 		var prefix = "has ";
 		if (typeof element.minProperties === "number") {
@@ -160,21 +171,20 @@ var parse_if = function(element, depth) {
 				}
 			}
 			r += "property **" + prop + "** ";
-			var rr = parse_if(ep, depth+1);
+			var rr = explain(ep, depth+1);
 			if (rr === null || rr === "") return null;
 			prefix = "";
 			return r+rr;
 		}).conjunction("and ", depth);
 		r.push(rr);
 		if (element.additionalProperties === false) {
-			r.push("not any more properties ");
+			r.push("has no more properties ");
 		} else if (isObject(element.additionalProperties)) {
-			var rr = parse_if(element.additionalProperties, depth+1);
+			var rr = explain(element.additionalProperties, depth+1);
 			r.push("each additional property" + rr);
 		}
 	}
-// contains | and it contains
-	//is of type array and each item
+	// array: items
 	if (Array.isArray(element.items)) {
 		let rr = "has "
 		if (typeof element.minItems === "number") {
@@ -189,10 +199,10 @@ var parse_if = function(element, depth) {
 		if (element.uniqueItems === true) {
 			rr += "unique ";
 		}
-		rr += "items, where ";
+		rr += "items, where<br/>";
 		element.items.forEach(function(item, i) {
 			rr += "the "+count(i+1)+" item ";
-			rr += parse_if(item, depth+1);
+			rr += explain(item, depth+1);
 			r.push(rr);
 			rr = "";
 		});
@@ -209,11 +219,11 @@ var parse_if = function(element, depth) {
 			rr += "not more than " + element.maxItems + " ";
 		}
 		rr += "items, where every item ";
-		rr += parse_if(element.items, depth+1);
+		rr += explain(element.items, depth+1);
 
 		r.push(rr);
 	}
-	//contains
+	// array: contains
 	if (isObject(element.contains)) {
 		let rr = "contains "
 		if (typeof element.minContains === "number") {
@@ -226,46 +236,31 @@ var parse_if = function(element, depth) {
 			rr += "not more than " + element.maxContains + " ";
 		}
 		rr += "items, where every item ";
-		rr += parse_if(element.contains, depth+1);
+		rr += explain(element.contains, depth+1);
 
 		r.push(rr);
 	}
 
-	// oneOf / anyOf
+	// oneOf / anyOf / allOf / not
 	if (Array.isArray(element.anyOf)) {
-		var rr = element.anyOf.map(e=>parse_if(e, depth+1)).conjunction("or ", depth);
+		var rr = element.anyOf.map(e=>explain(e, depth+1)).conjunction("or ", depth);
 		if (rr) r.push("either " + rr);
 	}
 	if (Array.isArray(element.oneOf)) {
-		var rr = element.oneOf.map(e=>parse_if(e, depth+1)).conjunction("or ", depth);
+		var rr = element.oneOf.map(e=>explain(e, depth+1)).conjunction("or ", depth);
 		if (rr) r.push("either " + rr);
 	}
 	if (Array.isArray(element.allOf)) {
-		var rr = element.allOf.map(e=>parse_if(e, depth+1)).conjunction("and ", depth)
+		var rr = element.allOf.map(e=>explain(e, depth+1)).conjunction("and ", depth)
 		if (rr) r.push("all of " + rr);
 	}
 	if (isObject(element.not)) {
-		var rr = parse_if(element.not, depth+1);
-		if (!rr) r.push("never");
-		else if (rr !== "never") r.push("not " + rr);
+		var rr = explain(element.not, depth+1);
+		if (!rr) return "never";
+		else if (rr !== "never") r.push("never " + rr);
 	}
 	return r.conjunction("and ", depth);
 }
 
-var parse_allof = function(element, p_element) {
-	if (isObject(element.if)) {
-		var element_name = "the element";
-		console.log("if "+element_name+"\n" +
-				parse_if(element.if));
-		console.log("\nthen:\n");
-	}
-}
 
-if (Array.isArray(schema.allOf)) {
-	schema.allOf.forEach(parse_allof, schema);
-}
-
-console.log(
-	"The configuration is valid, if it\n" +
-	parse_if(schema)
-);
+exports.explain = explain;
