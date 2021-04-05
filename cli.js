@@ -6,7 +6,7 @@ const explain_json_schema = require(".").explain;
 
 var schema = JSON.parse(fs.readFileSync(argv.schema));
 
-var valid = explain_json_schema(schema);
+var valid = explain_json_schema(schema, argv.level || 0, argv.hard);
 if (valid === null) {
 	console.log("The schema is always valid.");
 } else if (valid === "never") {

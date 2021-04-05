@@ -39,14 +39,13 @@ Examples:
     * contains
     * minContains, maxContains
   * allOf, oneOf, anyOf, not
+  * if, then, else
   * multiple types (`type: ["string", "null"]`)
 
 
 ### Missing JSON schema features
 
-  * if, then, else
   * object: dependencies (Properties and Schema)
-
 
 ## Install & Usage
 
