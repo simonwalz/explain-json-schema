@@ -59,7 +59,7 @@ var explain = function(element, depth) {
 		global_schema = null;
 		return re;
 	}
-	//element = getref(element);
+	element = getref(element);
 	if (typeof depth !== "number") depth = 0;
 	var r = [];
 	if (element.deprecated === true) {
@@ -121,7 +121,7 @@ var explain = function(element, depth) {
 	}
 	// string
 	if (typeof element.format === "string") {
-		var rr = "has *" + element.format + "* format";
+		var rr = "has *" + element.format + "* format ";
 		r.push(rr);
 	}
 	if (typeof element.pattern === "string") {
